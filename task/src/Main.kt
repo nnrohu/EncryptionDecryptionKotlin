@@ -1,28 +1,35 @@
 package encryptdecrypt
 
-fun main() {
-    val type = readln()
-    val input = readln()
-    val key = readln().toInt()
-    when(type){
-        "enc" -> enc(input,key)
-        "dec" -> dec(input,key)
+
+fun main(args: Array<String>) {
+
+    var mode = "enc"
+    var key = 0
+    var data = ""
+    mode = args[args.indexOf("-mode") + 1]
+    key = args[args.indexOf("-key") + 1].toInt()
+    data = args[args.indexOf("-data") + 1]
+
+    when (mode) {
+        "enc" -> enc(data, key)
+        "dec" -> dec(data, key)
     }
 }
 
 fun enc(input: String, key: Int) {
     var encrypt = ""
-    input.forEach {   ch ->
-       val eChar = ch.code + key
-        encrypt+= Char(eChar)
+    input.forEach { ch ->
+        val eChar = ch.code + key
+        encrypt += Char(eChar)
     }
     println(encrypt)
 }
- fun dec(input: String, key: Int) {
-     var decrypt = ""
-     input.forEach {   ch ->
-         val eChar = ch.code - key
-         decrypt+= Char(eChar)
-     }
-     println(decrypt)
- }
+
+fun dec(input: String, key: Int) {
+    var decrypt = ""
+    input.forEach { ch ->
+        val eChar = ch.code - key
+        decrypt += Char(eChar)
+    }
+    println(decrypt)
+}
