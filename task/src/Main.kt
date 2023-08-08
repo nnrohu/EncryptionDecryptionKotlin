@@ -1,59 +1,71 @@
 package encryptdecrypt
 
 import java.io.File
+import kotlin.math.abs
 
 fun main(args: Array<String>) {
-    var inputFile: String? = null
-    var outputFile: String? = null
-    var mode = "enc"
-    var key = 0
-    var data = ""
 
-    for (i in args.indices step 2) {
-        when (args[i]) {
-            "-mode" -> mode = args[i + 1]
-            "-key" -> key = args[i + 1].toInt()
-            "-data" -> data = args[i + 1]
-            "-in" -> inputFile = args[i + 1]
-            "-out" -> outputFile = args[i + 1]
-        }
-    }
+    val alg = args[args.indexOf("-alg") + 1]
+    val mode = args[args.indexOf("-mode") + 1]
+    val key = args[args.indexOf("-key") + 1].toInt()
+    val inFileName = args[args.indexOf("-in") + 1]
+    val outFileName = args[args.indexOf("-out") + 1]
 
-    val inputText = if (inputFile != null) {
-        try {
-            File(inputFile).readText()
-        } catch (e: Exception) {
-            println("Error: Input file not found or could not be read.")
-            return
-        }
+    val inFile = File(inFileName)
+    val inFileData = inFile.readText()
+
+    val outFile = File(outFileName)
+
+    if (alg == "unicode") {
+        if (mode == "dec") outFile.writeText(getUnicodeDecrypt(inFileData, key))
+        else outFile.writeText(getUnicodeEncrypt(inFileData, key))
     } else {
-        data
-    }
-
-    val result = when (mode) {
-        "enc" -> enc(inputText, key)
-        "dec" -> dec(inputText, key)
-        else -> {
-            println("Error: Invalid mode specified.")
-            return
-        }
-    }
-
-    if (outputFile != null) {
-        try {
-            File(outputFile).writeText(result)
-        } catch (e: Exception) {
-            println("Error: Output file could not be written.")
-        }
-    } else {
-        println(result)
+        if (mode == "dec") outFile.writeText(getShiftDecrypt(inFileData, key))
+        else outFile.writeText(getShiftEncrypt(inFileData, key))
     }
 }
 
-fun enc(input: String, key: Int): String {
-    return input.map { ch -> (ch.toInt() + key).toChar() }.joinToString("")
+fun getUnicodeEncrypt(data: String, key: Int): String {
+    var result = ""
+    data.forEach { result += it + key }
+    return result
 }
 
-fun dec(input: String, key: Int): String {
-    return input.map { ch -> (ch.toInt() - key).toChar() }.joinToString("")
+fun getUnicodeDecrypt(data: String, key: Int): String {
+    var result = ""
+    data.forEach { result += it - key }
+    return result
 }
+
+fun getShiftEncrypt(data: String, key: Int): String {
+    var result = ""
+    val alphabet = "abcdefghijklmnopqrstuvwxyz".toList()
+    data.forEach {
+        result +=
+            if (it.isLetter()) {
+                if (alphabet.indexOf(it) + key > alphabet.size)
+                    alphabet[abs(alphabet.size - (alphabet.indexOf(it) + key))]
+                else alphabet[alphabet.indexOf(it) + key]
+            } else it
+    }
+    return result
+}
+
+fun getShiftDecrypt(data: String, key: Int): String {
+    var result = ""
+    val alphabet = "abcdefghijklmnopqrstuvwxyz".toList()
+    data.forEach {
+        result +=
+            if (it.isLetter()) {
+                if (alphabet.indexOf(it) - key < 0)
+                    alphabet[alphabet.size - abs(alphabet.indexOf(it) - key)]
+                else alphabet[alphabet.indexOf(it) - key]
+            } else it
+    }
+    return result
+}
+
+
+
+
+
